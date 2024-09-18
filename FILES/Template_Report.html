@@ -1,0 +1,166 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report - VWBA</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            color: #333;
+            background-color: #fff; /* Fondo blanco */
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            color: #333;
+        }
+        h1, h2 {
+            color: #333;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+        p {
+            line-height: 1.5;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        a {
+            color: #005fce;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #ff;
+            color: #fff;
+			width: 80%;
+            margin: auto;
+        }
+        .footer a {
+            color: #2FC5EE;
+			font-size: 1.2em;
+            text-decoration: none;
+			padding: 10px;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+            font-size: 2em;
+            font-weight: bold;
+            color: #fff;
+            background-color: #333; /* Fondo del header */
+        }
+        .logo-container img {
+            margin: 0 10px;
+        }
+        .logo-n4w {
+            width: 300px; /* Tamaño del logo de Nature4Water */
+        }
+        .logo-tnc {
+            width: 200px; /* Tamaño del logo de The Nature Conservancy */
+        }
+        .image-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        Volumetric Water Benefit Accounting
+    </div>
+	<div class="image-container">
+            <img src="Fig_Header" alt="Imagen de la Cuenca del río Carlillos">
+	</div>
+    <div class="container">
+		<! Bloque 1 - Nombre de la cuenca>
+        <h1>01-NameBasin</h1>
+		
+		<! Bloque 2 - Descripción de la cuenca>
+        <p>02-DescriptionBasin</p>		
+        
+		<! Bloque 3 - Imagen de localización de la cuenca>
+		<div class="image-container">
+            <img src="03-FigBasin" alt="Imagen de la Cuenca">
+        </div>
+		<h2>Portfolio areas considered</h2>
+		<p>Agricultural practices area (ha): 03-AreaAG <br>Land conservation and restoration area (ha): 03-AreaCR</p>
+		
+		<! Bloque 4 - Beneficios Volumétricos>
+        <h2>Volumetric Water Benefit</h2>
+        <p>Volumetric benefits are estimated using the methods described in the <a href="https://www.wri.org/research/volumetric-water-benefit-accounting-vwba-method-implementing-and-valuing-water-stewardship">Volumetric Water Benefit Accounting (VWBA): A Method for Implementing and Valuing Water Stewardship Activities guide</a> and the <a href="https://tnc.box.com/s/5cz0t55xiapumxurqcwjavstaza1z365">Volumetric Water Benefit Accounting 2.0 – Installment 4 Updated VWB Calculation Methods guide</a>.</p>		
+		
+        <table>
+            <thead>
+                <tr>
+                    <th>Activity</th>
+                    <th>Indicator</th>
+                    <th>Objetive</th>
+					<th>VWB (m<sup>3</sup>/yr)</th>
+                    <th>Method</th>
+                </tr>
+            </thead>
+			
+			<! Bloque 4 - TableVWBA>
+            <!ValueTableVWBA>
+        </table>
+		
+		<! Bloque 5 - Metricas>
+        <!MetricTable>
+		
+		<! Bloque 6 - Bio>
+		<!BioTable>
+    </div>
+    <footer class="footer">
+        <div><a href="https://nature4water.org/">Nature for Water - Facility</a></div>
+        <div class="logo-container">
+            <img class="logo-n4w" src="Fig_Footer_1" alt="Nature4Water Logo">
+            <img class="logo-tnc" src="Fig_Footer_2" alt="The Nature Conservancy Logo">
+        </div>
+    </footer>
+</body>
+</html>
