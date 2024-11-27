@@ -1,20 +1,15 @@
 function CN_avg = CN_With_AgriPrac(app,Path_Porfolio)
+% Nature For Water Facility - The Nature Conservancy
 % -------------------------------------------------------------------------
-% Matlab Version - R2023b 
+% Matlab - R2023b 
 % -------------------------------------------------------------------------
-%                              BASE DATA 
-% -------------------------------------------------------------------------
-% The Nature Conservancy - TNC
-% 
-% Project     : Herramienta de Beneficios Volumetricos
-% 
-% Author      : Jonathan Nogales Pimentel
-%               Hydrology Specialist
-%               jonathan.nogales@tnc.org
-% 
-% Date        : Mayo, 2024
-% 
-% -------------------------------------------------------------------------
+%                           BASIC INFORMATION
+%--------------------------------------------------------------------------
+% Author        : Jonathan Nogales Pimentel
+% Email         : jonathan.nogales@tnc.org
+% Date          : June, 2024
+%
+%--------------------------------------------------------------------------
 % This program is free software: you can redistribute it and/or modify it 
 % under the terms of the GNU General Public License as published by the 
 % Free Software Foundation, either version 3 of the License, or option) any 
@@ -24,15 +19,26 @@ function CN_avg = CN_With_AgriPrac(app,Path_Porfolio)
 % ee the GNU General Public License for more details. You should have 
 % received a copy of the GNU General Public License along with this program
 % If not, see http://www.gnu.org/licenses/.
+% 
 % -------------------------------------------------------------------------
 %                              DESCRIPTION
 % -------------------------------------------------------------------------
-% De acuerdo con sun et al. (2015), la efectividad de la labranza cero (NT) 
-% para reducir la escorrentía superficial es entre un 21,9% y un 27,2%.
-% Para efectos de la herramienta se considera un valor promedio de 24.5%.
-% El CN con actividades se estima como el valor que genere una reducción
-% del 24.5% en la escorrentía con una precipitación de igual al percentil
-% del 95% de la serie de tiempo de precipitaciones globales.
+% According to sun et al. (2015), the effectiveness of no-tillage (NT) in 
+% reducing surface runoff is between 21.9% and 27.2%. For the purposes of 
+% the tool, an average value of 24.5% is considered. The NC with activities 
+% is estimated as the value that generates a 24.5% reduction in runoff with 
+% a precipitation of equal to the 95% percentile of the global precipitation 
+% time series.
+%
+% -------------------------------------------------------------------------
+%                                INPUTS
+% -------------------------------------------------------------------------
+%    Path_Porfolio: Path of the agricultural practices portfolio 
+%
+% -------------------------------------------------------------------------
+%                                OUTPUTS
+% -------------------------------------------------------------------------
+%    CN_avg    [dimensionless] : Average curve number 
 %
 % -------------------------------------------------------------------------
 %                               REFERENCES

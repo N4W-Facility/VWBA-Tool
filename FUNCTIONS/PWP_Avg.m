@@ -1,4 +1,4 @@
-function Ks_avg = Ks_Avg(app)
+function PWP_avg = PWP_Avg(app)
 % Nature For Water Facility - The Nature Conservancy
 % -------------------------------------------------------------------------
 % Matlab - R2023b 
@@ -7,7 +7,8 @@ function Ks_avg = Ks_Avg(app)
 %--------------------------------------------------------------------------
 % Author        : Jonathan Nogales Pimentel
 % Email         : jonathan.nogales@tnc.org
-% Date          : June, 2024
+% Project       : GF0001-Program_Intelligence
+% Date          : November, 2024
 %
 %--------------------------------------------------------------------------
 % This program is free software: you can redistribute it and/or modify it 
@@ -23,30 +24,45 @@ function Ks_avg = Ks_Avg(app)
 % -------------------------------------------------------------------------
 %                              DESCRIPTION
 % -------------------------------------------------------------------------
-% This function estimates the average saturation hydraulic conductivity for 
-% the basin in (mm/d).
+% This function estimates the average permanent wilting point for the basin
 %
 % -------------------------------------------------------------------------
 %                               INPUTS
 % -------------------------------------------------------------------------
-% ProjectPath   : Project Path
-% 
+% ProjectPath       : Project Path
+% BasinArea   [m^2] : Basin area
+%
 % -------------------------------------------------------------------------
 %                               OUTPUTS
 % -------------------------------------------------------------------------
-% Ks_avg [mm/d] : average saturation hydraulic conductivity
+% PWP_avg    [mm]   : Average permanent wilting point 
 
-ProgressBar = waitbar(0, 'Processing ...','Color',[1 1 1]);
-wbch        = allchild(ProgressBar);
-jp          = wbch(1).JavaPeer;
-jp.setIndeterminate(1)
 
-% Read saturation hydraulic conductivity (mm/d)
-Ks      = GRIDobj( fullfile(app.ProjectPath,'02-Biophysic','Ks.tif') );
-Ks.Z(Ks.Z == 0) = NaN;
+% Permanent wilting point raster scale factor
+SF          = 1/100;
 
-% Estimation average saturation hydraulic conductivity [mm/d]
-Ks_avg      = double(mean(Ks.Z(:),'omitnan'));
+% Coversion factor mm -> m
+ConFac_1    = 1/1000;
 
-% Close waitbar
-close(ProgressBar)
+% Coversion factor m -> mm
+ConFac_2    = 1000;
+
+% Read permanent wilting point [m^3/m^3]
+PWP          = GRIDobj( fullfile(app.ProjectPath,'02-Biophysic','PMP.tif') );
+PWP.Z        = PWP.Z*SF;
+PWP.Z(PWP.Z == 0) = NaN;
+
+% Read soil depth [mm]
+SD          = GRIDobj( fullfile(app.ProjectPath,'02-Biophysic','Soil_Depth.tif') );
+
+% Soil depth is limited to 0.5 meters (500 mm). 
+SD.Z(SD.Z > 500) = 500;
+
+% Pixel area [m^2]
+PixelArea   = ((SD.cellsize*110567)^2);
+
+% Estimation permanent wilting point [m^3]
+PWP_m3       = PWP.Z.*(SD.Z*ConFac_1).*PixelArea;
+
+% Estimation average permanent wilting point [mm]
+PWP_avg      = (double(sum(PWP_m3(:),'omitnan'))/app.BasinArea)*ConFac_2;

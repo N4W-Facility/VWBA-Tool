@@ -1,20 +1,15 @@
 function Smax_avg = Smax_Avg(app)
+% Nature For Water Facility - The Nature Conservancy
 % -------------------------------------------------------------------------
-% Matlab Version - R2023b 
+% Matlab - R2023b 
 % -------------------------------------------------------------------------
-%                              BASE DATA 
-% -------------------------------------------------------------------------
-% The Nature Conservancy - TNC
-% 
-% Project     : Herramienta de Beneficios Volumetricos
-% 
-% Author      : Jonathan Nogales Pimentel
-%               Hydrology Specialist
-%               jonathan.nogales@tnc.org
-% 
-% Date        : Mayo, 2024
-% 
-% -------------------------------------------------------------------------
+%                           BASIC INFORMATION
+%--------------------------------------------------------------------------
+% Author        : Jonathan Nogales Pimentel
+% Email         : jonathan.nogales@tnc.org
+% Date          : June, 2024
+%
+%--------------------------------------------------------------------------
 % This program is free software: you can redistribute it and/or modify it 
 % under the terms of the GNU General Public License as published by the 
 % Free Software Foundation, either version 3 of the License, or option) any 
@@ -24,41 +19,59 @@ function Smax_avg = Smax_Avg(app)
 % ee the GNU General Public License for more details. You should have 
 % received a copy of the GNU General Public License along with this program
 % If not, see http://www.gnu.org/licenses/.
+% 
 % -------------------------------------------------------------------------
 %                              DESCRIPTION
 % -------------------------------------------------------------------------
-% De acuerdo con sun et al. (2015), la efectividad de la labranza cero (NT) 
-% para reducir la escorrentía superficial es entre un 21,9% y un 27,2%.
-% Para efectos de la herramienta se considera un valor promedio de 24.5%.
-% El CN con actividades se estima como el valor que genere una reducción
-% del 24.5% en la escorrentía con una precipitación de igual al percentil
-% del 95% de la serie de tiempo de precipitaciones globales.
+% This function estimates the average soil saturation water content for the 
+% basin.
 %
 % -------------------------------------------------------------------------
-%                               REFERENCES
+%                               INPUTS
 % -------------------------------------------------------------------------
-% Sun, Y., Zeng, Y., Shi, Q., Pan, X., & Huang, S. (2015). No-tillage 
-% controls on runoff: A meta-analysis. Soil and Tillage Research, 153, 1-6.
-% https://www.sciencedirect.com/science/article/pii/S0167198715000884
+% ProjectPath       : Project Path
+% BasinArea   [m^2] : Basin area
+%
+% -------------------------------------------------------------------------
+%                               OUTPUTS
+% -------------------------------------------------------------------------
+% Smax_avg    [mm]  : Average soil saturation water content
+% 
 
+% Progress Bar
 ProgressBar = waitbar(0, 'Processing precipitation data from the global database','Color',[1 1 1]);
 wbch        = allchild(ProgressBar);
 jp          = wbch(1).JavaPeer;
 jp.setIndeterminate(1)
 
-% Leer Smax
-Smax      = GRIDobj( fullfile(app.ProjectPath,'02-Biophysic','Smax.tif') );
+% Soil saturation water content raster scale factor
+SF_Smax     = 1/100;
+
+% Coversion factor mm -> m
+ConFac_1    = 1/1000;
+
+% Coversion factor m -> mm
+ConFac_2    = 1000;
+
+% Read soil saturation water content [m^3/m^3]
+Smax        = GRIDobj( fullfile(app.ProjectPath,'02-Biophysic','Smax.tif') );
+Smax.Z      = Smax.Z*SF_Smax;
 Smax.Z(Smax.Z == 0) = NaN;
 
-% Leer Depth
-SD      = GRIDobj( fullfile(app.ProjectPath,'02-Biophysic','Soil_Depth.tif') );
+% Read soil depth [mm]
+SD          = GRIDobj( fullfile(app.ProjectPath,'02-Biophysic','Soil_Depth.tif') );
+
+% Soil depth is limited to 0.5 meters (500 mm). 
 SD.Z(SD.Z > 500) = 500;
 
-% Multiplicar
-Smax_m3 = (Smax.Z/100).*(SD.Z/1000).*((Smax.cellsize*110567)^2);
+% Pixel area [m^2]
+PixelArea   = ((Smax.cellsize*110567)^2);
 
-% Average CN
-Smax_avg      = (double(sum(Smax_m3(:),'omitnan'))/app.BasinArea)*1000;
+% Estimation soil saturation water content [m^3]
+Smax_m3     = Smax.Z.*(SD.Z*ConFac_1).*PixelArea;
+
+% Etimation average soil saturation water content [mm]
+Smax_avg    = (double(sum(Smax_m3(:),'omitnan'))/app.BasinArea)*ConFac_2;
 
 % Close waitbar
 close(ProgressBar)

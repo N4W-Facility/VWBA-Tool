@@ -1,4 +1,4 @@
-function [VWB_R, VWB_Sw] = Plot_TS_SWY(ProjectPath, DateSPI, SPI, DroughtClass, Date, P, SwH, SwF, RH, RF, BasinArea, PWA,StatusPlot)
+function [VWB_R, VWB_Sw] = Plot_TS_SWY(ProjectPath, DateSPI, SPI, DroughtClass, Date, P, SwH, SwF, RH, RF, BasinArea, PWP,StatusPlot)
 % -------------------------------------------------------------------------
 % Matlab Version - R2023b 
 % -------------------------------------------------------------------------
@@ -134,9 +134,13 @@ set(gca, 'TickLabelInterpreter','latex', 'FontWeight','bold','Color','none', 'bo
 % -------------------------------------------------------------------------
 % Recarga
 % -------------------------------------------------------------------------
-subplot(5,1,5)
-R = ((RF - RH)/1000)*BasinArea;
+% Convertion factor mm -> m
+ConFac  = 1/1000;
+% Recarga [m^3]
+R = (RF - RH)*ConFac*BasinArea;
 R(R<0) = 0;
+
+subplot(5,1,5)
 plot(Date,R)
 
 % Etiqueta del eje X
@@ -164,9 +168,16 @@ SPInew  = sum(((y2 == y1')&(m2 == m1')).*SPI',2);
 
 VWB_R   = sum(R(SPInew < 0),'omitnan')/10;
 
-VWB_Sw  = (((sum(SwF(SPInew < 0)*PWA) + sum(RF(SPInew < 0))) - ...
-          (sum(SwH(SPInew < 0)*PWA) + sum(RH(SPInew < 0))))/1000)*BasinArea; 
-VWB_Sw  = VWB_Sw/10;
+% Soil water (mm)
+SwF_T       = max([(SwF - PWP), zeros(size(SwF))],[],2);
+SwH_T       = max([(SwH - PWP), zeros(size(SwH))],[],2);
+
+% Increased soil water seasonal (m^3)
+SwR         = ((SwF_T + RF) - (SwH_T + RH))*ConFac*BasinArea; 
+SwR(SwR<0)  = 0;
+
+ % Increased soil water seasonal (m^3/yr)
+VWB_Sw      = sum(SwR(SPInew < 0),'omitnan')/10;
 
 if StatusPlot
     % Escribir serie de tiempo

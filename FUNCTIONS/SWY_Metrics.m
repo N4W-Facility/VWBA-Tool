@@ -78,23 +78,22 @@ QF      = Method_A1(P, CNF);
 Smax    = Smax_Avg(app.AppVWBA);
 
 % Leer CC
-CC      = CC_Avg(app.AppVWBA);
+FC      = CC_Avg(app.AppVWBA);
+
+% Agua disponible para las plantas
+PWP     = PWP_Avg(app.AppVWBA);
 
 % Conductividad hidráulica
 Ks      = Ks_Avg(app.AppVWBA);
 
 % Aplicar metodo para condición SbN
-[RH, SwH] = Method_A15(P, ET, CS, QH, Smax, CC, Ks);
+[RH, SwH] = Method_A15(P, ET, CS, QH, Smax, FC, PWP, Ks);
 
 % Aplicar metodo para condición SbN
-[RF, SwF] = Method_A15(P, ET, CS, QF, Smax, CC, Ks);
+[RF, SwF] = Method_A15(P, ET, CS, QF, Smax, FC, PWP, Ks);
 
 % SPI
-[DateSPI, SPI, DroughtClass] = Index_SPI(Date, P, 'Index','SPI','SizeStep',1);
-     
-% Agua disponible para las plantas
-PWA = PWA_Avg(app.AppVWBA);
-
-[VWB_R, VWB_Sw] = Plot_TS_SWY(app.AppVWBA.ProjectPath, DateSPI, SPI, DroughtClass, Date, P, SwH, SwF, RH, RF, app.AppVWBA.BasinArea, PWA, false);
+[DateSPI, SPI, DroughtClass] = Index_SPI(Date, P, 'Index','SPI','SizeStep',1);     
+[VWB_R, VWB_Sw] = Plot_TS_SWY(app.AppVWBA.ProjectPath, DateSPI, SPI, DroughtClass, Date, P, SwH, SwF, RH, RF, app.AppVWBA.BasinArea, PWP, false);
 
 close(ProgressBar)

@@ -1,20 +1,15 @@
 function CN_avg = CN_With_CR(app,Path_Porfolio)
+% Nature For Water Facility - The Nature Conservancy
 % -------------------------------------------------------------------------
-% Matlab Version - R2023b 
+% Matlab - R2023b 
 % -------------------------------------------------------------------------
-%                              BASE DATA 
-% -------------------------------------------------------------------------
-% The Nature Conservancy - TNC
-% 
-% Project     : Herramienta de Beneficios Volumetricos
-% 
-% Author      : Jonathan Nogales Pimentel
-%               Hydrology Specialist
-%               jonathan.nogales@tnc.org
-% 
-% Date        : Mayo, 2024
-% 
-% -------------------------------------------------------------------------
+%                           BASIC INFORMATION
+%--------------------------------------------------------------------------
+% Author        : Jonathan Nogales Pimentel
+% Email         : jonathan.nogales@tnc.org
+% Date          : June, 2024
+%
+%--------------------------------------------------------------------------
 % This program is free software: you can redistribute it and/or modify it 
 % under the terms of the GNU General Public License as published by the 
 % Free Software Foundation, either version 3 of the License, or option) any 
@@ -24,22 +19,25 @@ function CN_avg = CN_With_CR(app,Path_Porfolio)
 % ee the GNU General Public License for more details. You should have 
 % received a copy of the GNU General Public License along with this program
 % If not, see http://www.gnu.org/licenses/.
+% 
 % -------------------------------------------------------------------------
 %                              DESCRIPTION
 % -------------------------------------------------------------------------
-% De acuerdo con sun et al. (2015), la efectividad de la labranza cero (NT) 
-% para reducir la escorrentía superficial es entre un 21,9% y un 27,2%.
-% Para efectos de la herramienta se considera un valor promedio de 24.5%.
-% El CN con actividades se estima como el valor que genere una reducción
-% del 24.5% en la escorrentía con una precipitación de igual al percentil
-% del 95% de la serie de tiempo de precipitaciones globales.
+% Depending on the hydrologic soil type, a cover can have four curve 
+% numbers. In this sense, the curve number for conservation and restoration 
+% activities is assigned as the lowest curve number following the current 
+% curve number.
 %
 % -------------------------------------------------------------------------
-%                               REFERENCES
+%                                INPUTS
 % -------------------------------------------------------------------------
-% Sun, Y., Zeng, Y., Shi, Q., Pan, X., & Huang, S. (2015). No-tillage 
-% controls on runoff: A meta-analysis. Soil and Tillage Research, 153, 1-6.
-% https://www.sciencedirect.com/science/article/pii/S0167198715000884
+%    Path_Porfolio: Path of the conservation and restoration portfolio 
+%
+% -------------------------------------------------------------------------
+%                                OUTPUTS
+% -------------------------------------------------------------------------
+%    CN_avg    [dimensionless] : Average curve number 
+%
 
 ProgressBar = waitbar(0, 'Processing ...','Color',[1 1 1]);
 wbch        = allchild(ProgressBar);
@@ -47,13 +45,13 @@ jp          = wbch(1).JavaPeer;
 jp.setIndeterminate(1)
 
 % Guardar raster
-LULC_BaU = GRIDobj( fullfile(app.ProjectPath,'02-Biophysic','LULC_BaU.tif') );
+LULC_BaU    = GRIDobj( fullfile(app.ProjectPath,'02-Biophysic','LULC_BaU.tif') );
 
 % grupos de suelos
-SG = GRIDobj( fullfile(app.ProjectPath,'02-Biophysic','SG.tif') );
+SG          = GRIDobj( fullfile(app.ProjectPath,'02-Biophysic','SG.tif') );
 
 % Leer portafolio
-Porfolio        = GRIDobj( Path_Porfolio );
+Porfolio    = GRIDobj( Path_Porfolio );
 
 % Remplazar coberturas de portafolio
 LULC_BaU.Z(Porfolio.Z > 0) = Porfolio.Z(Porfolio.Z > 0);

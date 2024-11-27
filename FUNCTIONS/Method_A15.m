@@ -1,21 +1,15 @@
-function [R, Sw] = Method_A15(P, ET, CS, Q, Smax, CC, Ks)
-% Appendix A-13. Nonpoint Source Pollutant Reduction Method
+function [R, Sw, Rr] = Method_A15(P, ET, CS, Q, Smax, FC, PWP, Ks)
+% Nature For Water Facility - The Nature Conservancy
 % -------------------------------------------------------------------------
-% Matlab Version - R2023b 
+% Matlab - R2023b 
 % -------------------------------------------------------------------------
-%                              BASE DATA 
-% -------------------------------------------------------------------------
-% The Nature Conservancy - TNC
-% 
-% Project     : Herramienta de Beneficios Volumetricos
-% 
-% Author      : Jonathan Nogales Pimentel
-%               Hydrology Specialist
-%               jonathan.nogales@tnc.org
-% 
-% Date        : Mayo, 2024
-% 
-% -------------------------------------------------------------------------
+%                           BASIC INFORMATION
+%--------------------------------------------------------------------------
+% Author        : Jonathan Nogales Pimentel
+% Email         : jonathan.nogales@tnc.org
+% Date          : June, 2024
+%
+%--------------------------------------------------------------------------
 % This program is free software: you can redistribute it and/or modify it 
 % under the terms of the GNU General Public License as published by the 
 % Free Software Foundation, either version 3 of the License, or option) any 
@@ -27,70 +21,96 @@ function [R, Sw] = Method_A15(P, ET, CS, Q, Smax, CC, Ks)
 % If not, see http://www.gnu.org/licenses/.
 % 
 % -------------------------------------------------------------------------
-%                               Description
+%                              DESCRIPTION
 % -------------------------------------------------------------------------
-% he Curve Number method enables estimation of the volumetric benefit of
-% the following activities using the referenced output indicators below:
-%   - Land conservation
-%   - Land cover restoration
-%   - Agricultural best management practices (BMPs)
+% This function estimates the Seasonal water availability for a basin as 
+% described in appendix A15. 
+% Appendix A-15: Increased recharge and seasonal water availability method
 %
 % -------------------------------------------------------------------------
-%                             INPUT DATA
+%                                INPUTS
 % -------------------------------------------------------------------------
-%    R      = Recharge (mm)
-%    I      = Infiltration (mm)
-%    SW     = Soil water content (mm)
-%    SAT    = Soil water content at saturation (mm)
-%    FC     = Soil water content at field capacity (mm)
-%    Rr     = Recharge rate (%)
-%    ET     = Evapotranspiration (mm)
-%    Q      = Runoff (mm)
-%    Pgross = Gross precipitation (mm)
-%    CS     = Canopy storage (mm)
+%    P    [mm]   : Precipitation time series
+%    ET   [mm]   : Potential evapotranspiration time series
+%    CS   [mm]   : Canopy storage time series
+%    Q    [mm]   : Runoff time series
+%    Smax [mm]   : Soil water content at saturation
+%    FC   [mm]   : Soil water content at field capacity
+%    PWP  [mm]   : Soil water content at permanent wilting point
+%    Ks   [mm/d] : Saturation hydraulic conductivity
 %
 % -------------------------------------------------------------------------
-%                             OUTPUT DATA
+%                                OUTPUTS
 % -------------------------------------------------------------------------
-%   VC   = Volume captured (m3)
+%    R    [mm]   : Recharge time series
+%    SW   [mm]   : Soil water content time series
+%    Rr   [mm]   : Percolation time series
+% 
+% -------------------------------------------------------------------------
+%                               REFERENCES
+% -------------------------------------------------------------------------
+%    Fan, Y., Gong, J., Wang, Y., Shao, X., & Zhao, T. (2019). Application 
+%    of Philip infiltration model to film hole irrigation. Water Supply, 
+%    19(3), 978-985. https://doi.org/10.2166/ws.2018.185
 
-Pnet    = P*0; 
+% Recharge [mm]
 R       = P*0;
+% Infiltration [mm]
 I       = P*0;
+% Soil water content [mm]
 Sw      = P*0; 
-Swo     = Smax;
-Rr      = Ks/Smax; 
-if Rr > 1, Rr= 1; end 
-for i = 1:length(P)   
-    % % Precipitación neta (mm)
-    % % Pnet = P(i) - CS(i) - Q(i)
+% Soil water content init [mm]
+Swo     = FC;
+% Percolation from the Soil to the aquifer [mm]
+Rr      = P*0;
 
-    % Infiltration (mm)
-    I(i) = P(i) - ET(i) - CS(i) - Q(i);      
-
-    % Cambio de humedad en el suelo (mm)
-    Swo = Swo + I(i);
-
-    if Swo<0
-        Swo = 0;
-    end
-
-    if I(i) < 0
-        I(i) = 0;
-    end
+for i = 1:length(P)  
+    % Infiltration [mm]
+    I(i) = P(i) - ET(i) - CS(i) - Q(i);
     
-    % Recharge (mm)
-    if Swo>=Smax
+    % Soil water content change [mm]
+    Swi = Swo + I(i);
+    
+    % Check Soil moisture
+    if Swi<0, Swi = 0; end
+    
+    % Check Infiltration
+    if I(i) < 0, I(i) = 0; end            
+
+    % Balance
+    if Swi >= Smax
+        % Recharge [mm]
         R(i) = I(i);
-        Swo = Smax;
-    elseif (Swo < Smax)&&(Swo>CC)
-        R(i) = Rr.*I(i);
-        Swo  = Swo - R(i);
+        % Soil moisture [mm]
+        Swi  = Smax;
+    elseif (Swi < Smax)&&(Swi > FC)
+        % To estimate how much water percolates from the soil to the aquifer, 
+        % Darcy's law is used where: q = Ki*i
+        % Where i is the hydraulic gradient and Ki is the hydraulic 
+        % conductivity for moisture at time i. To estimate i, it is assumed 
+        % that it is proportional to the ratio between the infiltrated water 
+        % in the soil and the saturation water content of the soil. Ki is 
+        % estimated using the van Genuchten-Mualem model, considering the 
+        % parameterization of a loam soil according to the parameters 
+        % reported by Fan et al. (2018).
+        % Van Genuchten-Mualem parameter
+        n       = 1.56;
+        m       = 1 - (1/n);
+        % Saturation percentage [Dimensionless]
+        Se      = ((Swi-PWP)/(Smax-PWP));
+        % Hydraulic conductivity for soil moisture content i [mm/d]
+        Ksi     = Ks*(Se^0.5)*(1 - (1 - Se^(1/m))^m)^2;
+        % Percolated water [mm]
+        Rr(i)   = (I(i)/(Smax - FC))*(Ksi);
+        % Recharge [mm]
+        R(i)    = min([Rr(i),I(i)]);
+        % Soil moisture [mm]
+        Swi     = Swi - R(i);
     else
+        % Recharge [mm]
         R(i) = 0;
     end
-    Sw(i) = Swo;
-
-    % Seasonal water availability (mm)
-    % SWA = SW.*PA + R;
+    % Soil water content [mm]
+    Sw(i) = Swi;
+    Swo   = Swi;
 end
