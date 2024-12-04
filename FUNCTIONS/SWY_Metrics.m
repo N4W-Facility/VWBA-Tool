@@ -44,7 +44,7 @@ TS_Path = fullfile(app.AppVWBA.ProjectPath,'02-Biophysic','ETP.csv');
 [ErrorStatus, ET, Date] = app.AppVWBA.Read_TS(TS_Path);            
 if ErrorStatus
     return
-end                      
+end
 
 % Leer canopy storage
 TS_Path = fullfile(app.AppVWBA.ProjectPath,'02-Biophysic','CS.csv');

@@ -61,7 +61,15 @@ for r = 1:numel(gc)
 end
 clear GC IX I
 
-M = sparse(ix,ixc,true,nr,nr);
+ix((ixc<1)|(ixc>nr)) = [];
+ixc((ixc<1)|(ixc>nr)) = [];
+
+G = digraph(ix, ixc);
+G = remove_cycles(G);
+% G = remove_cycles_dfsearch(G);
+G = table2array(G.Edges);
+
+M = sparse(G(:,1),G(:,2),true,nr,nr);
 clear ix ixc    
 FD = FLOWobj(M,'refmat',refm,'size',siz,'algorithm','toposort','cellsize',refm(2));
 
