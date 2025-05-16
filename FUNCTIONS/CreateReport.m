@@ -86,8 +86,14 @@ if app.StatusMetric.Value
     if Data.Var2(3)
         % [~,VWB_Sw] = SWY_Metrics(app,Ap);
         
-        Total_VWB = app.AppVWBA.Index_AP2.Value + app.AppVWBA.Index_CR_Sw.Value;
-
+        % Si el usuario ingresa un volumen de agua personalizado, las
+        % metricas se estiman con este volumen, especialmente el de
+        % personas
+        if app.Check_UserTotal.Value
+            Total_VWB = app.VWB_UserTotal.Value;
+        else
+            Total_VWB = app.AppVWBA.Index_AP2.Value + app.AppVWBA.Index_CR_Sw.Value;
+        end
         % Personas benficidas. Se toma el valor de 150 litros/hab.día.
         % Dotación mínima recomendada por la Organización Mundial de la Salud (OMS): 
         % 100 litros por habitante por día (para cubrir necesidades básicas de consumo e higiene).
@@ -192,6 +198,64 @@ if app.StatusBio.Value
             '        </table>\n']);
     TextReport  = strrep(TextReport,'		<!BioTable>',TextHTML);
 end
+
+%% CO2
+CatNbS = {'Conservation','Reforestation','Best Management Practices (BMPs)'};
+if app.StatusCO2.Value
+    TextHTML = ['		<h2>Total carbon equivalent storage</h2>\n',...
+                '        <p>The total carbon equivalent stored is estimated using country-specific ',...                
+                'and solution archetype-specific carbon storage factors. The value is reported in “TonC02Eq/yr”. ',...                
+                '        <table>\n',...
+                '            <thead>\n',...
+                '                <tr>\n',...
+                '                    <th>Intervention</th>\n',...
+                '                    <th>Area (ha)</th>\n',...
+                '                    <th>Carbon storage (TonC02Eq/yr)</th>\n',...                
+                '                </tr>\n',...
+                '            </thead>\n',...
+                '            <tbody>\n'];
+      
+    % Countries
+    ISO                 = GRIDobj( fullfile(app.AppVWBA.ProjectPath,'02-Biophysic','Countries.tif') );
+    [AreaISO,CodeISO]   = groupcounts(ISO.Z(~isnan(ISO.Z)));
+    AreaISO             = AreaISO/sum(AreaISO);
+    
+    % Load Carbon Table [tCO2Eq/ha*yr]
+    CO2Table            = readmatrix( fullfile(app.AppVWBA.DataBasePath,'FactorCO2Eq.csv') );    
+
+    F_CR = (app.AppVWBA.PercentageArea_Con.Value/100);
+
+    AreaCO2_NbS = [app.AppVWBA.Area_CR.Value*F_CR,... 
+                   app.AppVWBA.Area_CR.Value*(1-F_CR),...
+                   app.AppVWBA.Area_AgriPrac.Value];
+
+    % Factores Tons of CO2 equivalent stored [tCO2Eq/ha*yr]  
+    FactorCO2Eq = sum(CO2Table(CodeISO,3:5).*AreaISO,1);
+    
+    % Promedio global
+    GlobalCO2 = [mean(nonzeros(CO2Table(:,3)),'omitmissing'),...
+                 mean(nonzeros(CO2Table(:,4)),'omitmissing'),...
+                 mean(nonzeros(CO2Table(:,5)),'omitmissing')];
+    
+    % Correct
+    FactorCO2Eq = FactorCO2Eq + (GlobalCO2.*(FactorCO2Eq == 0));
+
+    % Tons of CO2 equivalent stored [tCO2Eq/yr]  
+    TotalCO2Eq  = AreaCO2_NbS.*FactorCO2Eq;
+
+    for i = 1:length(CatNbS)
+
+        TextHTML = BioTable( TextHTML, ...
+                             CatNbS{i},...
+                                num2str(AreaCO2_NbS(i),'%.2f'),...
+                                num2str(TotalCO2Eq(i),'%.2f'));
+    end
+    TextHTML = sprintf([TextHTML,...
+            '            </tbody>\n',...
+            '        </table>\n']);
+    TextReport  = strrep(TextReport,'		<!CO2Table>',TextHTML);
+end
+
 
 % imagen de encabezado
 TextReport  = strrep(TextReport,'Fig_Header', fullfile(app.AppVWBA.DataBasePath,'Report','N4W_Header.jpg') );
